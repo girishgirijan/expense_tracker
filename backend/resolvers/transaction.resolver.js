@@ -1,7 +1,77 @@
-const transactionResolver = {
-  Query: {},
-  Mutation: {},
-};
+import Transaction from "../models/transaction.model.js";
 
+const transactionResolver = {
+  Mutation: {
+    createTranscation: async (_, { input }, context) => {
+      try {
+        //Checking whether user is logged in and authorized
+        //if (!context.getUser()) throw new Error("Unauthorized");
+
+        const newTransaction = new Transaction({
+          ...input,
+          userId: context.getUser()._id,
+        });
+        await newTransaction.save();
+        return newTransaction;
+      } catch (err) {
+        console.log("Error in create transaction:", err);
+        throw new Error(err.message || "Internal server error");
+      }
+    },
+    updateTranscation: async (_, { input }, context) => {
+      try {
+        const updatedTransaction = await Transaction.findByIdAndUpdate(
+          input.transactionId,
+          input,
+          { new: true }
+        );
+        return updatedTransaction;
+      } catch (err) {
+        console.log("Error in update transaction:", err);
+        throw new Error(err.message || "Internal server error");
+      }
+    },
+    deleteTranscation: async (_, { transactionId }, context) => {
+      try {
+        const deletedTransaction = await Transaction.findByIdAndDelete(
+          transactionId
+        );
+        return deletedTransaction;
+      } catch (err) {
+        console.log("Error in delete transaction:", err);
+        throw new Error(err.message || "Internal server error");
+      }
+    },
+  },
+  Query: {
+    transactions: async (_, __, context) => {
+      try {
+        //Checking whether user is logged in and authorized
+        if (!context.getUser()) throw new Error("Unauthorized");
+
+        const userId = await context.getUser()._id;
+        const transactions = await Transaction.find({ userId });
+        return transactions;
+      } catch (err) {
+        console.log("Error in transactions:", err);
+        throw new Error(err.message || "Internal server error");
+      }
+    },
+    transaction: async (_, { transactionId }, context) => {
+      try {
+        //Checking whether user is logged in and authorized
+        if (!context.getUser()) throw new Error("Unauthorized");
+
+        const transaction = await Transaction.findById(transactionId);
+        return transaction;
+      } catch (err) {
+        console.log("Error in transaction:", err);
+        throw new Error(err.message || "Internal server error");
+      }
+    },
+    //TODO => add categoryStatistics query
+  },
+  //TODO => add user/transaction relation
+};
 
 export default transactionResolver;
