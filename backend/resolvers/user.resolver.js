@@ -16,7 +16,7 @@ const userResolver = {
         //Checking whether the user with provided username is existing or not
         const existingUser = await User.findOne({ username });
         if (existingUser) {
-          throw new Error("User already exists");
+          throw new Error("Username is already taken");
         }
 
         //Hashing password
@@ -46,6 +46,10 @@ const userResolver = {
     login: async (_, { input }, context) => {
       try {
         const { username, password } = input;
+        //Checking whether all fields are provided
+        if (!username || !password) {
+          throw new Error("All fields are required");
+        }
         const { user } = await context.authenticate("graphql-local", {
           username,
           password,
@@ -60,10 +64,10 @@ const userResolver = {
     logout: async (_, __, context) => {
       try {
         await context.logout();
-        req.session.destroy((err) => {
+        context.req.session.destroy((err) => {
           if (err) throw err;
         });
-        res.clearCookie("connect.sid");
+        context.res.clearCookie("connect.sid");
         return { message: "Logged out successfully" };
       } catch (err) {
         console.log("Error in logout:", err);
