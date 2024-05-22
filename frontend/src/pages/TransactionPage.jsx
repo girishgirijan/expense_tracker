@@ -14,7 +14,9 @@ export default function TransactionPage() {
     variables: { transactionId: id },
   });
   const [updateTransaction, { loading: loadingUpdate, error: errorUpdate }] =
-    useMutation(UPDATE_TRANSACTION);
+    useMutation(UPDATE_TRANSACTION, {
+      refetchQueries: ["GetTransactions", "GetTransactionStatistics"],
+    });
 
   const [formData, setFormData] = useState({
     description: data?.transaction?.description || "",

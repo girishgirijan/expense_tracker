@@ -6,7 +6,7 @@ import { CREATE_TRANSACTION } from "../graphql/mutations/transaction.mutation";
 export default function TransactionForm() {
   const [createTransaction, { loading, error }] =
     useMutation(CREATE_TRANSACTION, {
-      refetchQueries: ["GetTransactions"]
+      refetchQueries: ["GetTransactions", "GetTransactionStatistics"]
     });
 
   //Creating a new transaction
