@@ -1,4 +1,15 @@
+import toast from "react-hot-toast";
+
+import { useMutation } from "@apollo/client";
+import { CREATE_TRANSACTION } from "../graphql/mutations/transaction.mutation";
+
 export default function TransactionForm() {
+  const [createTransaction, { loading, error }] =
+    useMutation(CREATE_TRANSACTION, {
+      refetchQueries: ["GetTransactions"]
+    });
+
+  //Creating a new transaction
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -12,7 +23,19 @@ export default function TransactionForm() {
       location: formData.get("location"),
       date: formData.get("date"),
     };
-    console.log("transactionData", transactionData);
+
+    
+
+    try {
+      await createTransaction({
+        variables: { input: transactionData },
+      });
+      form.reset();
+      toast.success("Transaction has been added successfully");
+    } catch (error) {
+      console.log("Error:", error);
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -113,6 +136,7 @@ export default function TransactionForm() {
             name="amount"
             type="number"
             placeholder="150"
+            required
           />
         </div>
       </div>
@@ -132,6 +156,7 @@ export default function TransactionForm() {
             name="location"
             type="text"
             placeholder="New York"
+            required
           />
         </div>
 
@@ -150,6 +175,7 @@ export default function TransactionForm() {
             className="appearance-none block w-full bg-gray-200 text-gray-700 border  rounded py-[11px] px-4 mb-3 leading-tight focus:outline-none
 						 focus:bg-white"
             placeholder="Select date"
+            required
           />
         </div>
       </div>
@@ -159,8 +185,9 @@ export default function TransactionForm() {
           from-pink-500 to-pink-500 hover:from-pink-600 hover:to-pink-600
 						disabled:opacity-70 disabled:cursor-not-allowed"
         type="submit"
+        disabled={loading}
       >
-        Add Transaction
+        {loading ? "Loading.." : " Add Transaction"}
       </button>
     </form>
   );
