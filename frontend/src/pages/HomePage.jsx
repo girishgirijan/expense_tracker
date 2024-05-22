@@ -10,14 +10,18 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 import { LOGOUT } from "../graphql/mutations/user.mutation";
 import { GET_AUTHENTICATED_USER } from "../graphql/queries/user.query";
-import { useMutation } from "@apollo/client";
+import { GET_TRANSACTION_STATISTICS } from "../graphql/queries/transaction.query";
+import { useMutation, useQuery } from "@apollo/client";
 
 
 export default function HomePage() {
-  const [logout, {loading, error}] = useMutation(LOGOUT, {
+  const [logout, {loading, client, error}] = useMutation(LOGOUT, {
     refetchQueries: ["GetAuthenticatedUser"]
   });
 
+  const {data} = useQuery(GET_TRANSACTION_STATISTICS)
+
+  console.log("Category", data)
   const chartData = {
     labels: ["Saving", "Expense", "Investment"],
     datasets: [
@@ -45,6 +49,7 @@ export default function HomePage() {
   const handleLogout = async() => {
     try {
       await logout();
+      client.resetStore();
     } catch (error) {
       console.log("Error logging out:", error);
       toast.error(error.message);
