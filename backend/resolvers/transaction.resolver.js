@@ -1,5 +1,5 @@
 import Transaction from "../models/transaction.model.js";
-
+import User from "../models/user.model.js";
 const transactionResolver = {
   Mutation: {
     createTranscation: async (_, { input }, context) => {
@@ -82,14 +82,24 @@ const transactionResolver = {
         }
         categoryMap[transaction.category] += transaction.amount;
       });
-      
+
       return Object.entries(categoryMap).map(([category, totalAmount]) => ({
         category,
         totalAmount,
       }));
     },
   },
-  //TODO => add user/transaction relation
+  Transaction: {
+    user: async (parent, _, __) => {
+      try {
+        const user = await User.findById(parent.userId);
+        return user;
+      } catch (err) {
+        console.log("Error in transaction.user:", err);
+        throw new Error(err.message || "Internal server error");
+      }
+    },
+  },
 };
 
 export default transactionResolver;
